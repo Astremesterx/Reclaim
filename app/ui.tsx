@@ -7,6 +7,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { useApp } from "./provider";
 import { getSource, type Guide } from "@/lib/catalog";
 import { toast } from "sonner";
+import { GITHUB_PAGES } from "@/lib/deployment";
 import { Empty, EmptyHeader, EmptyMedia, EmptyContent } from "@/components/ui/empty";
 export function Pick({ label, value, onChange, options }: {
     label: string;
@@ -22,7 +23,7 @@ export function SearchBox({ compact = false }: {
 }) { const app = useApp(), router = useRouter(); const [q, setQ] = useState(app.query); return <form className={`searchbar ${compact ? 'compact' : ''}`} onSubmit={e => { e.preventDefault(); app.setQuery(q); router.push('/guides'); }}><Search size={21}/><input value={q} onChange={e => setQ(e.target.value)} aria-label="Describe your problem" placeholder="What happened? e.g. someone changed my Gmail password" maxLength={400}/><button type="submit" className="btn primary">Find help</button></form>; }
 export function GuideCard({ guide: g }: {
     guide: Guide;
-}) { const app = useApp(); return <article className="guide-card"><div className="guide-meta"><span className="pill">{g.platform}</span><span><Clock size={13}/>{g.minutes} min effort</span></div><Link href={`/guides/${g.id}`}><h3>{g.title}</h3><p>{g.description}</p></Link><div className="guide-card-footer"><span><BookOpen size={14}/>{getSource(g.sourceIds[0]).name} source</span><button className={`icon-btn ${app.privateData.bookmarks.includes(g.id) ? 'selected' : ''}`} onClick={() => app.bookmark(g.id).catch(e => toast.error(e.message))} aria-label={`Bookmark ${g.title}`}><Bookmark size={17}/></button></div></article>; }
+}) { const app = useApp(); return <article className="guide-card"><div className="guide-meta"><span className="pill">{g.platform}</span><span><Clock size={13}/>{g.minutes} min effort</span></div><Link href={`/guides/${g.id}`}><h3>{g.title}</h3><p>{g.description}</p></Link><div className="guide-card-footer"><span><BookOpen size={14}/>{getSource(g.sourceIds[0]).name} source</span>{!GITHUB_PAGES && <button className={`icon-btn ${app.privateData.bookmarks.includes(g.id) ? 'selected' : ''}`} onClick={() => app.bookmark(g.id).catch(e => toast.error(e.message))} aria-label={`Bookmark ${g.title}`}><Bookmark size={17}/></button>}</div></article>; }
 export function SourceLink({ id }: {
     id: string;
 }) { const s = getSource(id); return <a className="source-link" href={s.url} target="_blank" rel="noopener noreferrer"><span><strong>{s.name}</strong><small>{s.title}</small><small>{new URL(s.url).hostname}</small></span><ExternalLink size={16}/></a>; }

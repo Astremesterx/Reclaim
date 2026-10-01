@@ -1,6 +1,6 @@
 # RECLAIM
 
-A private working preview of a cybersecurity recovery app: symptom search, source-backed guides, adaptive triage, personal checklists, recurring calendar check-ins, and community discussions.
+A cybersecurity recovery app: symptom search, source-backed guides, adaptive triage, personal checklists, recurring calendar check-ins, and server-backed community discussions. A separate public GitHub Pages edition provides the guides and browser-based recovery features.
 
 The initial collection contains 28 original guide summaries. All specialist review remains pending. See [launch readiness](docs/launch-readiness.md) before changing the audience or inviting people to rely on sensitive guidance.
 
@@ -19,9 +19,13 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 
 Only execute unapplied migration files. Migrations contain schema changes, not demonstration community data. Sites applies packaged migrations to its hosted database.
 
+## GitHub Pages
+
+Use `npm run build:pages` and `npm run preview:pages` for the static edition. The GitHub Actions workflow publishes it on pushes to `main`. Guides, filters, triage, checklists, opt-in browser saving, themes, printing, and calendar exports work without a backend. Accounts and shared community features are unavailable on Pages. See [GitHub Pages setup and behavior](docs/github-pages.md) for deployment and storage details.
+
 ## Verify
 
-`npm run typecheck` checks the application. `npm test` runs twelve behavioral tests using the actual TypeScript route logic and SQL against an isolated in-memory SQLite database. The tests require Node 26 or a Node release with `node:sqlite`. They cover triage distinctions, filtering, private-record ownership, CSRF, bounded writes, input validation, moderation, source redirects, timezone exports, and reminder uniqueness.
+`npm run typecheck` checks the application. `npm test` runs fourteen behavioral tests using the actual TypeScript route logic and SQL against an isolated in-memory SQLite database. The tests require Node 26 or a Node release with `node:sqlite`. They cover triage distinctions, filtering, private-record ownership, CSRF, bounded writes, input validation, moderation, source redirects, timezone exports, reminder uniqueness, and Pages routing without changing the server default.
 
 Browser checks use the real local app and database. Test posts are clearly labeled and stay in the ignored local database; they are not shipped as seed content. See [launch readiness](docs/launch-readiness.md) for the recorded journeys and remaining verification.
 

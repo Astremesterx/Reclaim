@@ -21,3 +21,7 @@
 .nav-mobile{display:none}@media(max-width:760px){.nav-desktop{display:none}.nav-mobile{display:inline}.nav-wrap nav>a:last-child{display:none}.nav-wrap nav a{min-height:44px;display:flex;align-items:center}.nav-wrap nav{height:44px;font-size:14px;gap:10px}.header-tools>.btn{display:none}.header-tools>.lucide-globe-2{display:none}.header-tools{gap:4px}}
 
 .step-navigation{display:flex;justify-content:space-between;border-top:1px solid var(--border);margin-top:20px;padding-top:8px}.step-navigation button{min-height:44px}.guide-card-footer .icon-btn{width:44px;height:44px}.icon-btn{min-width:36px;min-height:36px}
+/* Clear storage context for the browser-only GitHub Pages edition. */
+.edition-notice { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px 20px; padding:9px 20px; font-size:12px; line-height:1.6; background:var(--card); color:var(--muted-foreground); border-bottom:1px solid var(--border); }
+.edition-notice a { color:var(--primary); text-decoration:underline; text-underline-offset:3px; }
+@media print { .edition-notice { display:none; } }

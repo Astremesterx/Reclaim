@@ -9,9 +9,26 @@ import * as privateApi from '../.sites-runtime/test-modules/private.mjs';
 import * as communityApi from '../.sites-runtime/test-modules/community.mjs';
 import * as adminApi from '../.sites-runtime/test-modules/admin.mjs';
 import {asUser} from './platform.mjs';
+import {pagesHref,pagesRoute} from '../.sites-runtime/test-modules/pages-routing.mjs';
+import {GITHUB_PAGES} from '../.sites-runtime/test-modules/deployment.mjs';
 const origin='https://reclaim.example';
 const request=(data,headers={})=>new Request(origin+'/api/private',{method:'POST',headers:{'Origin':origin,'Content-Type':'application/json','X-Reclaim-Request':'1',...headers},body:JSON.stringify(data)});
 const answer=extra=>({...defaultAnswers,...extra});
+
+test('Pages routes preserve shared guide URLs and triage queries under a project path',()=>{
+ const href=pagesHref('/guides/google-account');
+ const shared=new URL(href,'https://astremesterx.github.io/Reclaim/');
+ assert.equal(shared.pathname,'/Reclaim/');
+ assert.equal(pagesRoute(shared.hash).pathname,'/guides/google-account');
+ const triage=pagesRoute(pagesHref('/help?category=accounts'));
+ assert.equal(triage.pathname,'/help');assert.equal(triage.searchParams.get('category'),'accounts');
+ assert.equal(pagesRoute('').pathname,'/');assert.equal(pagesRoute('#main').pathname,'/');
+ for(const href of ['https://support.google.com/','mailto:help@example.test','tel:1930','#main','//example.test/'])assert.equal(pagesHref(href),href);
+});
+
+test('the standard server edition remains enabled outside the Pages build',()=>{
+ assert.equal(GITHUB_PAGES,false);
+});
 test('triage distinguishes the main recovery triggers and urgent financial loss',()=>{
  const cases=[['accounts','Google','changed','google-account'],['accounts','Microsoft','changed','microsoft-account'],['accounts','Social media','changed','social-account'],['phishing','Any service','link','suspicious-link'],['phishing','Any service','password','exposed-password'],['phishing','Any service','ran','malware-check'],['phishing','Any service','app','connected-apps'],['phishing','Any service','paid','payment-fraud'],['money','UPI / payment app','paid','upi-fraud'],['devices','Apple','lost','stolen-iphone'],['devices','Any service','lost','lost-computer'],['malware','Any service','ransom','ransomware'],['safety','Any service','monitoring','monitoring-safety'],['safety','Any service','images','image-abuse'],['unsure','Any service','unsure','not-sure']];
  for(const [category,platform,action,id] of cases)assert.equal(recommend(answer({category,platform,action})),id);

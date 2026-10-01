@@ -4,7 +4,9 @@ import { createPlan, defaultAnswers, type Plan, type Answers } from "@/lib/recov
 import { getGuide } from "@/lib/catalog";
 import { planSchema } from "@/lib/validation";
 import { Toaster, toast } from "sonner";
-export async function api(path: string, data?: unknown) { const r = await fetch(path, { method: data ? "POST" : "GET", headers: data ? { "Content-Type": "application/json", "X-Reclaim-Request": "1" } : undefined, body: data ? JSON.stringify(data) : undefined }); const j: any = await r.json(); if (!r.ok)
+import { GITHUB_PAGES } from "@/lib/deployment";
+const storageKey = (name: string) => `${GITHUB_PAGES ? 'reclaim-pages' : 'reclaim'}-${name}`;
+export async function api(path: string, data?: unknown) { if (GITHUB_PAGES) throw new Error('This feature needs a server and is unavailable in the GitHub Pages edition.'); const r = await fetch(path, { method: data ? "POST" : "GET", headers: data ? { "Content-Type": "application/json", "X-Reclaim-Request": "1" } : undefined, body: data ? JSON.stringify(data) : undefined }); const j: any = await r.json(); if (!r.ok)
     throw new Error(j.error || "This action could not be completed."); return j; }
 type AppState = {
     plan: Plan | null;
@@ -29,21 +31,21 @@ export function AppProvider({ children }: {
     children: ReactNode;
 }) {
     const [plan, setPlan] = useState<Plan | null>(null), [persist, setPersist] = useState(false), [ready, setReady] = useState(false), [region, setRegion] = useState("Global"), [theme, setTheme] = useState("dark"), [query, setQuery] = useState(""), [user, setUser] = useState<any>(null), [privateData, setPrivate] = useState<any>({ plans: [], reminders: [], bookmarks: [] });
-    const refreshUser = useCallback(async () => { try {
+    const refreshUser = useCallback(async () => { if (GITHUB_PAGES) return; try {
         const d = await api('/api/me');
         setUser(d.user);
     }
     catch {
         setUser(null);
     } }, []);
-    const refreshPrivate = useCallback(async () => { const d = await api('/api/private'); setPrivate(d); }, []);
+    const refreshPrivate = useCallback(async () => { if (GITHUB_PAGES) return; const d = await api('/api/private'); setPrivate(d); }, []);
     useEffect(() => { try {
-        const t = localStorage.getItem('reclaim-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        const t = localStorage.getItem(storageKey('theme')) || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
         setTheme(t);
-        setRegion(localStorage.getItem('reclaim-region') || 'Global');
-        if (localStorage.getItem('reclaim-save') === 'yes') {
+        setRegion(localStorage.getItem(storageKey('region')) || 'Global');
+        if (localStorage.getItem(storageKey('save')) === 'yes') {
             setPersist(true);
-            const raw = localStorage.getItem('reclaim-plan');
+            const raw = localStorage.getItem(storageKey('plan'));
             if (raw) {
                 const parsed = planSchema.safeParse(JSON.parse(raw));
                 if (parsed.success)
@@ -55,23 +57,23 @@ export function AppProvider({ children }: {
     useEffect(() => { if (ready) {
         document.documentElement.dataset.theme = theme;
         try {
-            localStorage.setItem('reclaim-theme', theme);
-            localStorage.setItem('reclaim-region', region);
+            localStorage.setItem(storageKey('theme'), theme);
+            localStorage.setItem(storageKey('region'), region);
         }
         catch { }
     } }, [theme, region, ready]);
     useEffect(() => { if (ready) {
         try {
             if (persist) {
-                localStorage.setItem('reclaim-save', 'yes');
+                localStorage.setItem(storageKey('save'), 'yes');
                 if (plan)
-                    localStorage.setItem('reclaim-plan', JSON.stringify(plan));
+                    localStorage.setItem(storageKey('plan'), JSON.stringify(plan));
                 else
-                    localStorage.removeItem('reclaim-plan');
+                    localStorage.removeItem(storageKey('plan'));
             }
             else {
-                localStorage.removeItem('reclaim-save');
-                localStorage.removeItem('reclaim-plan');
+                localStorage.removeItem(storageKey('save'));
+                localStorage.removeItem(storageKey('plan'));
             }
         }
         catch {
