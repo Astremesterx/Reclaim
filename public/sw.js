@@ -1,0 +1,6 @@
+const CACHE='reclaim-public-v1';
+const publicPath=p=>p==='/'||p==='/guides'||p.startsWith('/guides/')||['/sources','/privacy','/glossary','/favicon.svg'].includes(p)||p.startsWith('/assets/')||p.startsWith('/_next/static/');
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==self.location.origin||!publicPath(u.pathname)||u.search)return;e.respondWith((async()=>{const cache=await caches.open(CACHE);try{const r=await fetch(e.request);if(r.ok&&!r.redirected)await cache.put(e.request,r.clone());return r;}catch{const saved=await cache.match(e.request);return saved||new Response('This guide has not been saved offline. Reconnect and open it once to save it.',{status:503,headers:{'Content-Type':'text/plain'}});}})());});
+self.addEventListener('message',e=>{if(e.data?.type!=='CACHE_PUBLIC'||!Array.isArray(e.data.urls))return;e.waitUntil((async()=>{const cache=await caches.open(CACHE);for(const value of e.data.urls.slice(0,50)){const u=new URL(value,self.location.origin);if(u.origin!==self.location.origin||!publicPath(u.pathname)||u.search)continue;try{const r=await fetch(u);if(r.ok&&!r.redirected)await cache.put(u,r);}catch{}}})());});

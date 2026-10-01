@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `idx_reminders_unique` ON `reminders` (`owner`,`title`,`due`,`frequency`,`timezone`);
